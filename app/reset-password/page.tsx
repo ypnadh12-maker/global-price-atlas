@@ -1,27 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
-  const router = useRouter()
 
-  async function reset() {
-    if (!supabase) return
+  const params = useSearchParams()
 
+  // 🔥 This captures the recovery session
+  useEffect(() => {
+    async function handleRecovery() {
+      const hash = window.location.hash
+
+      if (hash) {
+        await supabase.auth.exchangeCodeForSession(hash)
+      }
+    }
+
+    handleRecovery()
+  }, [])
+
+  async function updatePassword() {
     const { error } = await supabase.auth.updateUser({
       password,
     })
 
-    if (error) {
-      setMessage(error.message)
-    } else {
-      setMessage('Password updated! Redirecting to login...')
-      setTimeout(() => router.push('/login'), 2000)
-    }
+    if (error) setMessage(error.message)
+    else setMessage('Password updated! You can login now.')
   }
 
   return (
@@ -33,23 +41,23 @@ export default function ResetPassword() {
         placeholder="New password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        style={{ width: '100%', padding: 10, marginTop: 20 }}
+        style={{ width: '100%', padding: 10, marginBottom: 10 }}
       />
 
       <button
-        onClick={reset}
+        onClick={updatePassword}
         style={{
-          marginTop: 20,
-          padding: 10,
           width: '100%',
+          padding: 12,
           background: 'black',
           color: 'white',
+          border: 'none',
         }}
       >
         Update password
       </button>
 
-      <p style={{ marginTop: 20 }}>{message}</p>
+      {message && <p style={{ marginTop: 10 }}>{message}</p>}
     </main>
   )
 }
