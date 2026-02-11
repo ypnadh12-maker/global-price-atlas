@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useSearchParams } from 'next/navigation'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
 
-  const params = useSearchParams()
-
-  // 🔥 This captures the recovery session
+  // Capture recovery session from URL hash
   useEffect(() => {
     async function handleRecovery() {
       const hash = window.location.hash
