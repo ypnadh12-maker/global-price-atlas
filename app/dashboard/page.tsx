@@ -9,6 +9,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function load() {
+      if (!supabase) return
+
       const { data: session } = await supabase.auth.getSession()
 
       if (!session.session?.user) {
@@ -17,12 +19,10 @@ export default function Dashboard() {
         return
       }
 
-      const userId = session.session.user.id
-
       const { data } = await supabase
         .from('watchlists')
         .select('id, products(*)')
-        .eq('user_id', userId)
+        .eq('user_id', session.session.user.id)
 
       setItems(data || [])
       setLoading(false)
@@ -32,6 +32,8 @@ export default function Dashboard() {
   }, [])
 
   async function unsubscribe(id: string) {
+    if (!supabase) return
+
     await supabase.from('watchlists').delete().eq('id', id)
     setItems(items.filter(i => i.id !== id))
   }
@@ -49,18 +51,17 @@ export default function Dashboard() {
       <div style={styles.grid}>
         {items.map(item => (
           <div key={item.id} style={styles.card}>
-          {item.products.image_url && (
-  <img
-    src={item.products.image_url}
-    alt={item.products.name}
-    style={styles.image}
-  />
-)}
+            {item.products?.image_url && (
+              <img
+                src={item.products.image_url}
+                alt={item.products.name}
+                style={styles.image}
+              />
+            )}
 
-<h3 style={styles.productName}>
-  {item.products.name}
-</h3>
-
+            <h3 style={styles.productName}>
+              {item.products?.name}
+            </h3>
 
             <button
               onClick={() => unsubscribe(item.id)}
@@ -108,8 +109,7 @@ const styles: any = {
     borderRadius: 6,
     border: 'none',
     cursor: 'pointer'
-  },   // ← IMPORTANT comma here
-
+  },
   image: {
     width: '100%',
     maxHeight: 180,
