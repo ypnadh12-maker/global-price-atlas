@@ -13,7 +13,6 @@ const commissionMap: any = {
 
 export default async function AdminAnalytics() {
 
-  // ✅ Next.js 16 fix — cookies are async
   const cookieStore = await cookies()
 
   const supabase = createServerClient(
@@ -21,7 +20,10 @@ export default async function AdminAnalytics() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll() {}
       },
     }
   )
@@ -48,11 +50,15 @@ export default async function AdminAnalytics() {
     .select('*', { count: 'exact', head: true })
 
   const { count: subscribers } = await supabase
-    .from('subscriptions')
+    .from('watchlists')
     .select('*', { count: 'exact', head: true })
 
   const { count: clicksCount } = await supabase
     .from('affiliate_clicks')
+    .select('*', { count: 'exact', head: true })
+
+  const { count: analytics } = await supabase
+    .from('analytics_events')
     .select('*', { count: 'exact', head: true })
 
   const cards = [
@@ -61,6 +67,7 @@ export default async function AdminAnalytics() {
     { title: 'Alerts Sent', value: alerts },
     { title: 'Subscribers', value: subscribers },
     { title: 'Affiliate Clicks', value: clicksCount },
+    { title: 'Page Views', value: analytics },
   ]
 
   // REVENUE
@@ -88,8 +95,8 @@ export default async function AdminAnalytics() {
 
     totalRevenue += revenue
 
-    retailerRevenue[retailer?.name] =
-      (retailerRevenue[retailer?.name] || 0) + revenue
+    retailerRevenue[retailer?.name || 'Unknown'] =
+      (retailerRevenue[retailer?.name || 'Unknown'] || 0) + revenue
   })
 
   const leaderboard = Object.entries(retailerRevenue)

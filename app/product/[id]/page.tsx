@@ -1,10 +1,37 @@
-import { supabase } from '../../../lib/supabase'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
 import PriceGraph from '../../../components/PriceGraph'
 import SubscribeButton from '../../../components/SubscribeButton'
 import BuyButton from '../../../components/BuyButton'
 
+async function createSupabase() {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll() {} // required but unused in server component
+      }
+    }
+  )
+}
+
 export default async function ProductPage({ params }: any) {
-  const { id } = await params
+  const { id } = params
+
+  const supabase = await createSupabase()
+
+  // 🔹 track product view analytics
+  await supabase.from('analytics_events').insert({
+    type: 'view_product',
+    product_id: id
+  })
 
   // fetch product
   const { data: product } = await supabase
@@ -12,6 +39,10 @@ export default async function ProductPage({ params }: any) {
     .select('*')
     .eq('id', id)
     .single()
+
+  if (!product) {
+    return <h1>Product not found</h1>
+  }
 
   // fetch prices
   const { data: prices } = await supabase
@@ -24,10 +55,6 @@ export default async function ProductPage({ params }: any) {
   const { data: retailers } = await supabase
     .from('retailers')
     .select('*')
-
-  if (!product) {
-    return <h1>Product not found</h1>
-  }
 
   return (
     <main style={{ padding: 40, maxWidth: 900, margin: '0 auto' }}>
