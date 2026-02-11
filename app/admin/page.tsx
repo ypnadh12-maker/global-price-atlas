@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '@/lib/supabase'
+
+
 
 export default function AdminPage() {
   const [message, setMessage] = useState('')
@@ -23,6 +25,9 @@ const [image, setImage] = useState<File | null>(null)
   const [currency, setCurrency] = useState('USD')
 
   useEffect(() => {
+    if (!supabase) return
+
+  supabase.from('products').select('*').then(...)
     loadCountries()
     loadProducts()
     loadRetailers()
