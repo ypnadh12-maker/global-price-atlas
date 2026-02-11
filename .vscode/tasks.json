@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Deploy to Railway",
+      "type": "shell",
+      "command": "git add . && git commit -m \"auto deploy\" && git push",
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}
