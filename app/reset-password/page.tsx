@@ -8,12 +8,13 @@ export default function ResetPassword() {
   const [message, setMessage] = useState('')
   const [ready, setReady] = useState(false)
 
-  // Convert recovery URL into session
   useEffect(() => {
     async function init() {
-      const { error } = await supabase.auth.getSession()
+      // Convert recovery link into session
+      const { error } = await supabase.auth.exchangeCodeForSession(
+        window.location.href
+      )
 
-      // Supabase automatically reads hash and restores session
       if (error) {
         setMessage('Invalid or expired reset link.')
       } else {
@@ -30,7 +31,7 @@ export default function ResetPassword() {
     })
 
     if (error) setMessage(error.message)
-    else setMessage('Password updated! Login again.')
+    else setMessage('Password updated! You can login now.')
   }
 
   return (
@@ -38,7 +39,7 @@ export default function ResetPassword() {
       <h1>Reset Password</h1>
 
       {!ready ? (
-        <p>Verifying link...</p>
+        <p>Verifying reset link...</p>
       ) : (
         <>
           <input
