@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-const ADMIN_EMAIL = 'ypnadh@gmail.com'
+const ADMIN_EMAIL = 'admin@gmail.com'
 
 const commissionMap: any = {
   Amazon: 0.03,
