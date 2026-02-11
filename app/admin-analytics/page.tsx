@@ -20,19 +20,16 @@ export default async function AdminAnalytics() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-  getAll() {
-    return cookieStore.getAll()
-  },
-  setAll(cookiesToSet) {
-    try {
-      cookiesToSet.forEach(({ name, value, options }) =>
-        cookieStore.set(name, value, options)
-      )
-    } catch {
-      // ignore — server components can't set cookies during render
-    }
-  },
-},
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: '', ...options })
+        }
+      }
     }
   )
 
